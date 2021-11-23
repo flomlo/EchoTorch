@@ -107,12 +107,16 @@ class MatrixGenerator(object):
         # Scale
         w *= self.get_parameter('scale')
 
+        import numpy as np
         # Set spectral radius
         # If two dim tensor, square matrix and spectral radius is available
         if w.ndimension() == 2 and w.size(0) == w.size(1) and self.get_parameter('apply_spectral_radius'):
             # If current spectral radius is not zero
-            if echotorch.utils.spectral_radius(w) > 0.0:
-                w = (w / echotorch.utils.spectral_radius(w)) * self.get_parameter('spectral_radius')
+            #ρ = torch.max(torch.abs(torch.eig(w)[0])).item()
+            #ρ = echotorch.utils.spectral_radius(w)
+            ρ =  np.max(np.abs(np.linalg.eigvals(w)))
+            if ρ > 0.:
+                w = (w / ρ) * self.get_parameter('spectral_radius')
             else:
                 warnings.warn("Spectral radius of W is zero (due to small size), spectral radius not changed")
             # end if

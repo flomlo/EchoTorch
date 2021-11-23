@@ -66,20 +66,19 @@ class NormalMatrixGenerator(MatrixGenerator):
         :return: Generated matrix
         """
         # Params
+        connectome = self.get_parameter('connectome')
         connectivity = self.get_parameter('connectivity')
+        if connectivity is None:
+            connectivity = 1
         mean = self.get_parameter('mean')
         std = self.get_parameter('std')
 
-        # Full connectivity if none
-        if connectivity is None:
-            w = torch.zeros(size, dtype=dtype)
-            w = w.normal_(mean=mean, std=std)
-        else:
-            # Generate matrix with entries from norm
-            w = torch.zeros(size, dtype=dtype)
-            w = w.normal_(mean=mean, std=std)
+        w = torch.zeros(size, dtype=dtype)
+        w = w.normal_(mean=mean, std=std)
 
-            # Generate mask from bernoulli
+        #create mask
+        if connectome is None:
+            # Generate mask from bernoulli with given connectivity
             mask = torch.zeros(size, dtype=dtype)
             mask.bernoulli_(p=connectivity)
 
@@ -92,13 +91,10 @@ class NormalMatrixGenerator(MatrixGenerator):
                 x = torch.randint(high=size[0], size=(1, 1))[0, 0].item()
                 y = torch.randint(high=size[1], size=(1, 1))[0, 0].item()
                 mask[x, y] = 1.0
-            # end while
-
-            # Mask filtering
-            w *= mask
-        # end if
-
-        return w
+        else:
+            mask = connectome
+            
+        return w * mask
     # end _generate_matrix
 
     #enregion PRIVATE
